@@ -1,5 +1,6 @@
 /* WaterNet service worker — offline app shell */
-const CACHE = 'waternet-v1.1.0';
+// Bump this when shell assets change so installed clients pick them up.
+const CACHE = 'waternet-v1.1.1';
 const ASSETS = [
   './',
   './index.html',

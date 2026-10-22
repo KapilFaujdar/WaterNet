@@ -6,7 +6,7 @@
   const $$ = function (sel, root) { return Array.from((root || document).querySelectorAll(sel)); };
   const STORAGE_KEY = 'waternet.project.v1';
   const PREFS_KEY = 'waternet.prefs.v1';
-  const VERSION = '1.1.0';
+  const VERSION = '1.1.1';
 
   const PRESSURE_STOPS = [
     [-10, '#b71c1c'], [0, '#d32f2f'], [10, '#f57c00'], [20, '#fbc02d'],
@@ -37,6 +37,15 @@
     tank: 'Click or tap the map to place a tank.',
     reservoir: 'Click or tap the map to place a reservoir.',
     valve: 'Click or tap the upstream node, then the downstream node.'
+  };
+  const TOOL_KEYS = {
+    j: 'junction',
+    l: 'pipe',
+    p: 'pump',
+    t: 'tank',
+    r: 'reservoir',
+    v: 'valve',
+    s: 'select'
   };
   const DATA_HEAD = '<div class="data-head" aria-hidden="true"><span></span><span>ID</span><span>Details</span><span>Value</span><span></span></div>';
 
@@ -1263,6 +1272,7 @@
       '<p><strong>3 · Edit properties</strong><br>Select any node or link to open its editor. Set elevations, demands, pipe sizes and pump curves.</p>' +
       '<p><strong>4 · Simulate</strong><br>Open Simulate, choose a duration and step, then run. Use the time slider or play button to inspect pressures and flows over the day.</p>' +
       '<p><strong>Gestures</strong><br>Drag a node to move it · drag the map to pan · pinch or scroll to zoom · press F (or select Fit) to frame the network.</p>' +
+      '<p><strong>Keyboard</strong><br>J junction · L pipe · P pump · T tank · R reservoir · V valve · S select · F fit · Ctrl+Z undo · Ctrl+Y redo.</p>' +
       '<p><strong>Model notes</strong><br>Demands are L/s and pressures are metres of head. Pumps use a shutoff head and maximum flow, producing a quadratic head curve. Closed links are excluded from the solve.</p>' +
       '</div>';
     openSheet(html, 'How to use WaterNet', 'modal');
@@ -2439,21 +2449,27 @@
     document.addEventListener('keydown', function (e) {
       if (e.key === 'Escape') { closeSheet(); return; }
       const tag = (e.target && e.target.tagName || '').toLowerCase();
+      const key = e.key.toLowerCase();
       if ((e.metaKey || e.ctrlKey) && !tag.match(/input|textarea|select/)) {
-        if (e.key.toLowerCase() === 'z') { e.preventDefault(); if (e.shiftKey) redo(); else undo(); }
-        else if (e.key.toLowerCase() === 'y') { e.preventDefault(); redo(); }
+        if (key === 'z') { e.preventDefault(); if (e.shiftKey) redo(); else undo(); }
+        else if (key === 'y') { e.preventDefault(); redo(); }
         return;
       }
       if (state.sheetOpen || state.view !== 'map') return;
       if (e.metaKey || e.ctrlKey || e.altKey || tag.match(/input|textarea|select/)) return;
-      if (e.key === 'f' || e.key === 'F') {
+      if (TOOL_KEYS[key]) {
+        e.preventDefault();
+        setTool(TOOL_KEYS[key]);
+        return;
+      }
+      if (key === 'f') {
         e.preventDefault();
         fitCamera();
         renderMap();
-      } else if (e.key === '+' || e.key === '=') {
+      } else if (key === '+' || key === '=') {
         e.preventDefault();
         zoomAt(state.mapSize.w / 2, state.mapSize.h / 2, 1.2);
-      } else if (e.key === '-' || e.key === '_') {
+      } else if (key === '-' || key === '_') {
         e.preventDefault();
         zoomAt(state.mapSize.w / 2, state.mapSize.h / 2, 1 / 1.2);
       }

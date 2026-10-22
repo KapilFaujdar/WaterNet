@@ -109,14 +109,14 @@
             <input class="range" type="range" id="timeSlider" min="0" max="0" step="1" value="0" aria-label="Simulation time">
           </div>
           <div class="tool-dock" id="toolDock" role="toolbar" aria-label="Map tools">
-            <button class="tool active" data-tool="select" type="button" aria-label="Select"><svg class="icon"><use href="#i-cursor"/></svg><span>Select</span></button>
-            <button class="tool" data-tool="junction" type="button" aria-label="Add junction"><svg class="icon"><use href="#i-junction"/></svg><span>Junction</span></button>
-            <button class="tool" data-tool="pipe" type="button" aria-label="Add pipe"><svg class="icon"><use href="#i-pipe"/></svg><span>Pipe</span></button>
-            <button class="tool" data-tool="pump" type="button" aria-label="Add pump"><svg class="icon"><use href="#i-pump"/></svg><span>Pump</span></button>
-            <button class="tool" data-tool="tank" type="button" aria-label="Add tank"><svg class="icon"><use href="#i-tank"/></svg><span>Tank</span></button>
-            <button class="tool" data-tool="reservoir" type="button" aria-label="Add reservoir"><svg class="icon"><use href="#i-reservoir"/></svg><span>Reservoir</span></button>
-            <button class="tool" data-tool="valve" type="button" aria-label="Add valve"><svg class="icon"><use href="#i-valve"/></svg><span>Valve</span></button>
-            <button class="tool tool-sep" data-action="fit" type="button" aria-label="Fit network"><svg class="icon"><use href="#i-fit"/></svg><span>Fit</span></button>
+            <button class="tool active" data-tool="select" type="button" aria-label="Select" aria-keyshortcuts="S" title="Select (S)"><svg class="icon"><use href="#i-cursor"/></svg><span>Select</span></button>
+            <button class="tool" data-tool="junction" type="button" aria-label="Add junction" aria-keyshortcuts="J" title="Add junction (J)"><svg class="icon"><use href="#i-junction"/></svg><span>Junction</span></button>
+            <button class="tool" data-tool="pipe" type="button" aria-label="Add pipe" aria-keyshortcuts="L" title="Add pipe (L)"><svg class="icon"><use href="#i-pipe"/></svg><span>Pipe</span></button>
+            <button class="tool" data-tool="pump" type="button" aria-label="Add pump" aria-keyshortcuts="P" title="Add pump (P)"><svg class="icon"><use href="#i-pump"/></svg><span>Pump</span></button>
+            <button class="tool" data-tool="tank" type="button" aria-label="Add tank" aria-keyshortcuts="T" title="Add tank (T)"><svg class="icon"><use href="#i-tank"/></svg><span>Tank</span></button>
+            <button class="tool" data-tool="reservoir" type="button" aria-label="Add reservoir" aria-keyshortcuts="R" title="Add reservoir (R)"><svg class="icon"><use href="#i-reservoir"/></svg><span>Reservoir</span></button>
+            <button class="tool" data-tool="valve" type="button" aria-label="Add valve" aria-keyshortcuts="V" title="Add valve (V)"><svg class="icon"><use href="#i-valve"/></svg><span>Valve</span></button>
+            <button class="tool tool-sep" data-action="fit" type="button" aria-label="Fit network" aria-keyshortcuts="F" title="Fit network (F)"><svg class="icon"><use href="#i-fit"/></svg><span>Fit</span></button>
           </div>
         </div>
       </div>
@@ -168,8 +168,8 @@
     <button class="tab" data-view="data" type="button"><svg class="icon"><use href="#i-list"/></svg><span>Data</span></button>
     <button class="tab" data-view="more" type="button"><svg class="icon"><use href="#i-settings"/></svg><span>More</span></button>
     <div class="nav-foot" aria-hidden="true">
-      <div><b>WaterNet</b> <span id="navVersion">v1.1.0</span></div>
-      <span class="nav-hint">Drag to pan · Scroll to zoom · F to fit</span>
+      <div><b>WaterNet</b> <span id="navVersion">v1.1.1</span></div>
+      <span class="nav-hint">Drag to pan · Scroll to zoom · F to fit<br>J L P T R V tools · S to select</span>
     </div>
   </nav>
 </div>
