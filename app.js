@@ -6,7 +6,7 @@
   const $$ = function (sel, root) { return Array.from((root || document).querySelectorAll(sel)); };
   const STORAGE_KEY = 'waternet.project.v1';
   const PREFS_KEY = 'waternet.prefs.v1';
-  const VERSION = '1.0.0';
+  const VERSION = '1.1.0';
 
   const PRESSURE_STOPS = [
     [-10, '#b71c1c'], [0, '#d32f2f'], [10, '#f57c00'], [20, '#fbc02d'],
@@ -31,13 +31,14 @@
     valve: { label: 'Valve', icon: 'i-valve', cls: 'valve' }
   };
   const TOOL_HINTS = {
-    junction: 'Tap the map to place a junction.',
-    pipe: 'Tap the start node, then the end node.',
-    pump: 'Tap the suction node, then the discharge node.',
-    tank: 'Tap the map to place a tank.',
-    reservoir: 'Tap the map to place a reservoir.',
-    valve: 'Tap the upstream node, then the downstream node.'
+    junction: 'Click or tap the map to place a junction.',
+    pipe: 'Click or tap the start node, then the end node.',
+    pump: 'Click or tap the suction node, then the discharge node.',
+    tank: 'Click or tap the map to place a tank.',
+    reservoir: 'Click or tap the map to place a reservoir.',
+    valve: 'Click or tap the upstream node, then the downstream node.'
   };
+  const DATA_HEAD = '<div class="data-head" aria-hidden="true"><span></span><span>ID</span><span>Details</span><span>Value</span><span></span></div>';
 
   function clamp(v, a, b) { return Math.min(b, Math.max(a, v)); }
   function lerp(a, b, t) { return a + (b - a) * t; }
@@ -140,7 +141,6 @@
     chartLink: null,
     sheetOpen: false,
     installPrompt: null,
-    firstRun: false,
     lastSaved: null,
     toastTimer: null,
     ghostClickUntil: 0
@@ -242,6 +242,7 @@
     dom = {
       app: $('#app'),
       brandSub: $('#brandSub'),
+      navVersion: $('#navVersion'),
       btnUndo: $('#btnUndo'),
       btnRedo: $('#btnRedo'),
       btnMenu: $('#btnMenu'),
@@ -289,8 +290,7 @@
     if (stored) {
       state.project = stored;
     } else {
-      state.project = window.WaterNetInp.normalizeProject(window.WaterNetSamples.get('riverside'));
-      state.firstRun = true;
+      state.project = window.WaterNetInp.normalizeProject(window.WaterNetSamples.get('blank'));
     }
 
     bindStaticEvents();
@@ -308,12 +308,6 @@
     if (initialView && ['map', 'results', 'data', 'more'].indexOf(initialView) !== -1) {
       switchView(initialView);
     }
-
-    if (state.firstRun) {
-      setTimeout(function () {
-        if (!state.results && state.project.links.length) runSimulation({ silent: true, peak: true });
-      }, 450);
-    }
   }
 
   function renderAll() {
@@ -327,6 +321,7 @@
 
   function renderBrand() {
     if (!dom.brandSub) return;
+    if (dom.navVersion) dom.navVersion.textContent = 'v' + VERSION;
     const n = state.project ? state.project.nodes.length : 0;
     const l = state.project ? state.project.links.length : 0;
     dom.brandSub.textContent = n || l
@@ -412,17 +407,20 @@
     });
     const bw = Math.max(1, maxX - minX);
     const bh = Math.max(1, maxY - minY);
-    const top = 66, bottom = 140, padX = 34;
-    const availW = Math.max(30, s.w - padX * 2);
+    const wide = window.matchMedia('(min-width: 1000px)').matches;
+    const top = wide ? 84 : 66, bottom = wide ? 96 : 140;
+    const padL = wide ? 96 : 34, padR = 34;
+    const availW = Math.max(30, s.w - padL - padR);
     const availH = Math.max(30, s.h - top - bottom);
     let scale = Math.min(availW / bw, availH / bh);
     if (bw < 40 && bh < 40) scale = Math.min(1.4, scale);
     scale = clamp(scale, 0.035, 8);
     const midX = (minX + maxX) / 2;
     const midY = (minY + maxY) / 2;
+    const targetX = padL + availW / 2;
     const targetY = top + availH / 2;
     state.camera = {
-      x: midX,
+      x: midX - (targetX - s.w / 2) / scale,
       y: midY - (s.h / 2 - targetY) / scale,
       scale: scale
     };
@@ -902,14 +900,14 @@
     }
     if (state.tool === 'pipe' || state.tool === 'pump' || state.tool === 'valve') {
       if (!hit || hit.kind !== 'node') {
-        toast('Tap an existing node to connect.');
+        toast('Select an existing node to connect.');
         return;
       }
       if (!state.linkStart) {
         state.linkStart = hit.id;
         state.pointerWorld = world;
         renderMap();
-        toast('Now tap the ' + (state.tool === 'pump' ? 'discharge' : 'end') + ' node.');
+        toast('Now select the ' + (state.tool === 'pump' ? 'discharge' : 'end') + ' node.');
       } else if (state.linkStart === hit.id) {
         state.linkStart = null;
         state.hoverNode = null;
@@ -1050,6 +1048,9 @@
         return;
       }
       if (!gesture) {
+        if (state.tool === 'select' && e.pointerType !== 'touch') {
+          canvas.style.cursor = pick(x, y) ? 'pointer' : 'grab';
+        }
         if (state.tool === 'pipe' || state.tool === 'pump' || state.tool === 'valve') {
           state.pointerWorld = screenToWorld(x, y);
           const hit = pick(x, y);
@@ -1154,8 +1155,9 @@
 
   /* ================= sheets ================= */
 
-  function openSheet(html, label) {
+  function openSheet(html, label, mode) {
     dom.sheetContent.innerHTML = html;
+    dom.sheet.classList.toggle('modal', mode === 'modal');
     dom.sheetLayer.classList.add('open');
     dom.sheetLayer.setAttribute('aria-hidden', 'false');
     dom.sheet.setAttribute('aria-label', label || 'Panel');
@@ -1244,26 +1246,26 @@
   function openAbout() {
     const html = sheetHead('i-droplet', 'junction', 'About WaterNet', 'v' + VERSION + ' · ' + state.project.nodes.length + ' node' + (state.project.nodes.length === 1 ? '' : 's') + ' · ' + state.project.links.length + ' link' + (state.project.links.length === 1 ? '' : 's')) +
       '<div class="confirm-body">' +
-      '<p><strong>WaterNet</strong> is a mobile-first water distribution modeling tool. It combines a map-based network editor with a global gradient algorithm (GGA) hydraulic solver for steady-state and extended-period simulation.</p>' +
+      '<p><strong>WaterNet</strong> is a water distribution modeling tool for desktop and mobile. It combines a map-based network editor with a global gradient algorithm (GGA) hydraulic solver for steady-state and extended-period simulation.</p>' +
       '<p><strong>Hydraulics</strong><br>Hazen–Williams headloss, minor losses, demand-driven junctions, reservoirs, cylindrical tanks, pumps with quadratic head curves, and TCV valves. Results are solved to tight continuity and energy tolerances.</p>' +
       '<p><strong>Interoperability</strong><br>Reads and writes EPANET 2.x INP files, including SI and common US unit systems. Advanced EPANET features such as rule-based controls, PRV/PSV/FCV valves, water quality and MSX are not modeled.</p>' +
       '<p><strong>Attribution</strong><br>The EPANET name and format originate from the U.S. EPA and the Open Water Analytics EPANET project. WaterNet is an independent app and is not affiliated with or endorsed by EPA or OWA.</p>' +
       '<p class="tiny">Engineering results should be reviewed by a qualified professional before use in design or operation.</p>' +
       '</div>';
-    openSheet(html, 'About WaterNet');
+    openSheet(html, 'About WaterNet', 'modal');
   }
 
   function openHelp() {
     const html = sheetHead('i-info', '', 'How to use WaterNet', 'Build, simulate, inspect') +
       '<div class="confirm-body">' +
       '<p><strong>1 · Set a source</strong><br>Add a reservoir (fixed head) or a tank (variable level). Every connected network needs at least one source.</p>' +
-      '<p><strong>2 · Draw the network</strong><br>Place junctions, then use the pipe, pump or valve tool. Tap a start node and an end node to connect them.</p>' +
-      '<p><strong>3 · Edit properties</strong><br>Tap any node or link to open its editor. Set elevations, demands, pipe sizes and pump curves.</p>' +
+      '<p><strong>2 · Draw the network</strong><br>Place junctions, then use the pipe, pump or valve tool. Select a start node and an end node to connect them.</p>' +
+      '<p><strong>3 · Edit properties</strong><br>Select any node or link to open its editor. Set elevations, demands, pipe sizes and pump curves.</p>' +
       '<p><strong>4 · Simulate</strong><br>Open Simulate, choose a duration and step, then run. Use the time slider or play button to inspect pressures and flows over the day.</p>' +
-      '<p><strong>Gestures</strong><br>Drag a node to move it · drag the map to pan · pinch or scroll to zoom · tap Fit to frame the network.</p>' +
+      '<p><strong>Gestures</strong><br>Drag a node to move it · drag the map to pan · pinch or scroll to zoom · press F (or select Fit) to frame the network.</p>' +
       '<p><strong>Model notes</strong><br>Demands are L/s and pressures are metres of head. Pumps use a shutoff head and maximum flow, producing a quadratic head curve. Closed links are excluded from the solve.</p>' +
       '</div>';
-    openSheet(html, 'How to use WaterNet');
+    openSheet(html, 'How to use WaterNet', 'modal');
   }
 
   function openConfirm(title, message, confirmLabel, danger, onConfirm) {
@@ -1273,7 +1275,7 @@
       '<button class="btn btn-ghost" data-close type="button">Cancel</button>' +
       '<button class="btn ' + (danger ? 'btn-danger' : 'btn-primary') + '" id="confirmBtn" type="button">' + esc(confirmLabel) + '</button>' +
       '</div>';
-    openSheet(html, title);
+    openSheet(html, title, 'modal');
     const btn = $('#confirmBtn', dom.sheetContent);
     if (btn) btn.addEventListener('click', function () {
       closeSheet();
@@ -1287,7 +1289,7 @@
       warnings.map(function (w) { return '<div class="warning-row"><svg class="icon"><use href="#i-warning"/></svg><span>' + esc(w) + '</span></div>'; }).join('') +
       '</div>' +
       '<div class="sheet-actions"><button class="btn btn-primary" data-close type="button">Got it</button></div>';
-    openSheet(html, title);
+    openSheet(html, title, 'modal');
   }
 
   function menuAction(action) {
@@ -1759,6 +1761,7 @@
     const res = state.results;
     const has = !!(res && res.snapshots && res.snapshots.length);
     const stale = state.stale;
+    if (dom.resultsBody) dom.resultsBody.classList.toggle('no-results', !has);
     if (dom.simBadge) {
       dom.simBadge.className = 'badge ' + (!has ? '' : stale ? 'warn' : res.ok ? 'ok' : 'warn');
       dom.simBadge.textContent = !has ? 'Not run' : stale ? 'Out of date' : res.ok ? 'Converged' : 'Warnings';
@@ -1770,7 +1773,7 @@
     }
     const opts = state.project.options;
     let html = '';
-    html += '<div class="card">' +
+    html += '<div class="card run-card">' +
       '<div class="run-options">' +
       '<div class="field"><label>Duration</label><select id="optDuration">' + scenarioDurationOptions(num(opts.duration, 24)) + '</select></div>' +
       '<div class="field"><label>Time step</label><select id="optStep">' + stepOptions(num(opts.hydraulicStep, 1)) + '</select></div>' +
@@ -1787,7 +1790,7 @@
       '</div>';
 
     if (!has) {
-      html += '<div class="card"><div class="empty-state">' +
+      html += '<div class="card empty-card"><div class="empty-state">' +
         '<div class="icon-wrap"><svg class="icon"><use href="#i-gauge"/></svg></div>' +
         '<h3>No results yet</h3>' +
         '<p>Run the built-in solver to see pressures, flows, velocities and tank levels across your network.</p>' +
@@ -1799,7 +1802,7 @@
     }
 
     if (stale) {
-      html += '<div class="card" style="border-color:var(--warn);background:var(--warn-soft)">' +
+      html += '<div class="card stale-card" style="border-color:var(--warn);background:var(--warn-soft)">' +
         '<div style="display:flex;gap:9px;align-items:flex-start;color:var(--warn);font-size:11.5px;line-height:1.45">' +
         '<svg class="icon" style="width:17px;height:17px;flex:none"><use href="#i-warning"/></svg>' +
         '<div><strong style="display:block">Results are out of date</strong>The network changed after this simulation. Run again to refresh pressures and flows.</div>' +
@@ -1833,7 +1836,7 @@
     const linkOptions = state.project.links.map(function (l) {
       return '<option value="' + esc(l.id) + '"' + (l.id === state.chartLink ? ' selected' : '') + '>' + esc(l.id) + ' · ' + typeMeta(l.type).label + '</option>';
     }).join('');
-    html += '<div class="card">' +
+    html += '<div class="card chart-card">' +
       '<div class="card-head"><div><h3>Time series</h3><div class="sub">Inspect the selected asset across the simulation</div></div></div>' +
       '<div class="segmented" style="margin-top:0">' +
       '<button data-chart-kind="node" class="' + (state.chartKind === 'node' ? 'active' : '') + '" type="button">Node</button>' +
@@ -1849,10 +1852,10 @@
       '<div class="chart-legend"><span><i style="background:var(--primary)"></i>' + chartLegendLabel() + '</span><span><i style="background:var(--accent)"></i>current time</span></div>' +
       '</div>';
 
-    html += '<div class="card"><div class="card-head"><div><h3>Lowest pressures</h3><div class="sub" id="criticalSub">At ' + timeLabel(snap.time) + '</div></div><span class="badge ' + (minP && minP.value < 0 ? 'bad' : '') + '">' + (minP ? fmt(minP.value, 1) + ' m min' : '') + '</span></div>' +
+    html += '<div class="card critical-card"><div class="card-head"><div><h3>Lowest pressures</h3><div class="sub" id="criticalSub">At ' + timeLabel(snap.time) + '</div></div><span class="badge ' + (minP && minP.value < 0 ? 'bad' : '') + '">' + (minP ? fmt(minP.value, 1) + ' m min' : '') + '</span></div>' +
       '<div id="criticalList"></div></div>';
 
-    html += '<div class="card"><div class="card-head"><div><h3>Warnings</h3><div class="sub">' + (res.warnings.length ? res.warnings.length + ' item' + (res.warnings.length === 1 ? '' : 's') : 'No issues detected') + '</div></div>' +
+    html += '<div class="card warnings-card"><div class="card-head"><div><h3>Warnings</h3><div class="sub">' + (res.warnings.length ? res.warnings.length + ' item' + (res.warnings.length === 1 ? '' : 's') : 'No issues detected') + '</div></div>' +
       '<svg class="icon" style="color:' + (res.warnings.length ? 'var(--warn)' : 'var(--ok)') + '"><use href="#' + (res.warnings.length ? 'i-warning' : 'i-check') + '"/></svg></div>' +
       (res.warnings.length
         ? res.warnings.map(function (w) { return '<div class="warning-row"><svg class="icon"><use href="#i-warning"/></svg><span>' + esc(w) + '</span></div>'; }).join('')
@@ -2166,8 +2169,9 @@
           return n.id.toLowerCase().includes(q) || n.type.includes(q);
         });
       if (!list.length) {
-        html = '<div class="list-empty">' + (state.project.nodes.length ? 'No matching nodes.' : 'No nodes yet. Tap + to add a junction.') + '</div>';
+        html = '<div class="list-empty">' + (state.project.nodes.length ? 'No matching nodes.' : 'No nodes yet. Use + to add a junction.') + '</div>';
       } else {
+        html = DATA_HEAD;
         list.forEach(function (n) {
           const meta = typeMeta(n.type);
           const nr = snap && snap.nodes[n.id];
@@ -2199,6 +2203,7 @@
       if (!list.length) {
         html = '<div class="list-empty">' + (state.project.links.length ? 'No matching links.' : 'No links yet. Use the pipe tool on the map.') + '</div>';
       } else {
+        html = DATA_HEAD;
         list.forEach(function (l) {
           const meta = typeMeta(l.type);
           const lr = snap && snap.links[l.id];
@@ -2437,6 +2442,20 @@
       if ((e.metaKey || e.ctrlKey) && !tag.match(/input|textarea|select/)) {
         if (e.key.toLowerCase() === 'z') { e.preventDefault(); if (e.shiftKey) redo(); else undo(); }
         else if (e.key.toLowerCase() === 'y') { e.preventDefault(); redo(); }
+        return;
+      }
+      if (state.sheetOpen || state.view !== 'map') return;
+      if (e.metaKey || e.ctrlKey || e.altKey || tag.match(/input|textarea|select/)) return;
+      if (e.key === 'f' || e.key === 'F') {
+        e.preventDefault();
+        fitCamera();
+        renderMap();
+      } else if (e.key === '+' || e.key === '=') {
+        e.preventDefault();
+        zoomAt(state.mapSize.w / 2, state.mapSize.h / 2, 1.2);
+      } else if (e.key === '-' || e.key === '_') {
+        e.preventDefault();
+        zoomAt(state.mapSize.w / 2, state.mapSize.h / 2, 1 / 1.2);
       }
     });
     dom.sheetContent.addEventListener('click', function (e) {

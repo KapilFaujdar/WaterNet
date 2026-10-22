@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>WaterNet — Water Distribution Modeling</title>
-<meta name="description" content="WaterNet is a mobile water distribution modeling app with a built-in EPANET-style hydraulic engine. Build networks, run extended-period simulations, and inspect pressures and flows.">
+<meta name="description" content="WaterNet is a water distribution modeling app with a built-in EPANET-style hydraulic engine. Build networks, run extended-period simulations, and inspect pressures and flows on desktop or mobile.">
 <meta name="theme-color" content="#075a72">
 <meta name="color-scheme" content="light dark">
 <link rel="manifest" href="manifest.webmanifest">
@@ -91,7 +91,7 @@
         <div class="map-empty" id="mapEmpty" hidden>
           <div class="empty-icon"><svg class="icon"><use href="#i-droplet"/></svg></div>
           <h2>Start your network</h2>
-          <p>Place a reservoir or tank, then add junctions and pipes. Tap a tool below and then the map.</p>
+          <p>Place a reservoir or tank, then add junctions and pipes. Choose a tool, then click or tap the map.</p>
           <div class="empty-actions">
             <button class="btn btn-primary" id="emptyAddNode" type="button">Add junction</button>
             <button class="btn btn-ghost" id="emptySamples" type="button">Load example</button>
@@ -167,6 +167,10 @@
     <button class="tab" data-view="results" type="button"><svg class="icon"><use href="#i-chart"/></svg><span>Simulate</span></button>
     <button class="tab" data-view="data" type="button"><svg class="icon"><use href="#i-list"/></svg><span>Data</span></button>
     <button class="tab" data-view="more" type="button"><svg class="icon"><use href="#i-settings"/></svg><span>More</span></button>
+    <div class="nav-foot" aria-hidden="true">
+      <div><b>WaterNet</b> <span id="navVersion">v1.1.0</span></div>
+      <span class="nav-hint">Drag to pan · Scroll to zoom · F to fit</span>
+    </div>
   </nav>
 </div>
 

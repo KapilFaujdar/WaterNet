@@ -1,7 +1,7 @@
 {
   "name": "WaterNet — Water Distribution Modeling",
   "short_name": "WaterNet",
-  "description": "Build water distribution networks, run EPANET-style hydraulic simulations, and inspect pressures, flows and tank levels on your phone.",
+  "description": "Build water distribution networks, run EPANET-style hydraulic simulations, and inspect pressures, flows and tank levels on desktop or mobile.",
   "id": "./",
   "start_url": "./",
   "scope": "./",

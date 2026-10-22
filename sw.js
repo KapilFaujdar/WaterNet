@@ -1,5 +1,5 @@
 /* WaterNet service worker — offline app shell */
-const CACHE = 'waternet-v1.0.4';
+const CACHE = 'waternet-v1.1.0';
 const ASSETS = [
   './',
   './index.html',
