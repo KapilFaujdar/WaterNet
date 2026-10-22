@@ -6,7 +6,7 @@
   const $$ = function (sel, root) { return Array.from((root || document).querySelectorAll(sel)); };
   const STORAGE_KEY = 'waternet.project.v1';
   const PREFS_KEY = 'waternet.prefs.v1';
-  const VERSION = '1.1.1';
+  const VERSION = '1.1.2';
 
   const PRESSURE_STOPS = [
     [-10, '#b71c1c'], [0, '#d32f2f'], [10, '#f57c00'], [20, '#fbc02d'],

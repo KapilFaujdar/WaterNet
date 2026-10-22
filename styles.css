@@ -1003,10 +1003,18 @@ select.select, .field select {
     max-height: 82vh;
     border: 1px solid var(--line);
     border-radius: 20px;
-    transform: translate(-50%, -47%);
+    transform: translate(-50%, calc(-50% + 16px)) scale(.98);
+    opacity: 0;
+    visibility: hidden;
+    transition: transform .24s ease, opacity .18s ease, visibility 0s linear .24s;
     box-shadow: 0 24px 70px rgba(4, 21, 28, .32);
   }
-  .sheet-layer.open .sheet.modal { transform: translate(-50%, -50%); }
+  .sheet-layer.open .sheet.modal {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+    visibility: visible;
+    transition: transform .3s cubic-bezier(.2, .8, .2, 1), opacity .2s ease, visibility 0s linear 0s;
+  }
 
   /* toast centered over the workspace */
   .toast {
