@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>WaterNet — Water Distribution Modeling</title>
+<meta name="description" content="WaterNet is a mobile water distribution modeling app with a built-in EPANET-style hydraulic engine. Build networks, run extended-period simulations, and inspect pressures and flows.">
+<meta name="theme-color" content="#075a72">
+<meta name="color-scheme" content="light dark">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="WaterNet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<svg class="sprite" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
+  <symbol id="i-droplet" viewBox="0 0 24 24"><path d="M12 2.6c3.6 4.2 6.5 7.5 6.5 11a6.5 6.5 0 1 1-13 0c0-3.5 2.9-6.8 6.5-11Z" fill="currentColor"/><path d="M9.4 14.2a2.9 2.9 0 0 0 2.3 3.3" fill="none" stroke="rgba(255,255,255,.75)" stroke-width="1.6" stroke-linecap="round"/></symbol>
+  <symbol id="i-map" viewBox="0 0 24 24"><path d="m3.5 6.2 5-2.2 7 2.6 5-2.2v13.4l-5 2.2-7-2.6-5 2.2V6.2Z"/><path d="M8.5 4v13.4M15.5 6.6V20"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 4v16h16"/><path d="m7.5 14.5 3.2-3.6 3 2.4 4.3-5.4"/><circle cx="7.5" cy="14.5" r="1"/><circle cx="10.7" cy="10.9" r="1"/><circle cx="13.7" cy="13.3" r="1"/><circle cx="18" cy="7.9" r="1"/></symbol>
+  <symbol id="i-list" viewBox="0 0 24 24"><path d="M8.5 6h11M8.5 12h11M8.5 18h11"/><circle cx="4.5" cy="6" r="1.1"/><circle cx="4.5" cy="12" r="1.1"/><circle cx="4.5" cy="18" r="1.1"/></symbol>
+  <symbol id="i-settings" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M19.2 14.6a1.7 1.7 0 0 0 .3 1.9l.1.1-2.5 2.5-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6v.2h-3.6v-.2a1.7 1.7 0 0 0-1.1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1-2.5-2.5.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.6-1H3.4v-3.6h.2a1.7 1.7 0 0 0 1.6-1.1 1.7 1.7 0 0 0-.3-1.9l-.1-.1 2.5-2.5.1.1a1.7 1.7 0 0 0 1.9.3 1.7 1.7 0 0 0 1-1.6v-.2h3.6v.2a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1 2.5 2.5-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.6 1h.2v3.6h-.2a1.7 1.7 0 0 0-1.6 1Z"/></symbol>
+  <symbol id="i-more" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.6" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.6" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="i-undo" viewBox="0 0 24 24"><path d="M9 7 4 12l5 5"/><path d="M4.5 12H14a5.5 5.5 0 0 1 0 11h-1"/></symbol>
+  <symbol id="i-redo" viewBox="0 0 24 24"><path d="m15 7 5 5-5 5"/><path d="M19.5 12H10a5.5 5.5 0 0 0 0 11h1"/></symbol>
+  <symbol id="i-cursor" viewBox="0 0 24 24"><path d="m5 3.8 14.2 8.3-6.6 1.2-2.9 6.1L5 3.8Z"/></symbol>
+  <symbol id="i-junction" viewBox="0 0 24 24"><circle cx="12" cy="12" r="6.5"/><path d="M12 9v6M9 12h6"/></symbol>
+  <symbol id="i-pipe" viewBox="0 0 24 24"><path d="M4.5 19.5 19.5 4.5"/><circle cx="4.5" cy="19.5" r="2.2"/><circle cx="19.5" cy="4.5" r="2.2"/></symbol>
+  <symbol id="i-pump" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.2"/><path d="m10 8.5 5.2 3.5L10 15.5v-7Z" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="i-tank" viewBox="0 0 24 24"><ellipse cx="12" cy="6" rx="7" ry="2.6"/><path d="M5 6v11c0 1.4 3.1 2.6 7 2.6s7-1.2 7-2.6V6"/><path d="M5 10.5c0 1.4 3.1 2.6 7 2.6s7-1.2 7-2.6"/></symbol>
+  <symbol id="i-reservoir" viewBox="0 0 24 24"><path d="M3 8.5c1.5 0 1.5-1.4 3-1.4s1.5 1.4 3 1.4 1.5-1.4 3-1.4 1.5 1.4 3 1.4 1.5-1.4 3-1.4 1.5 1.4 3 1.4"/><path d="M3 13c1.5 0 1.5-1.4 3-1.4s1.5 1.4 3 1.4 1.5-1.4 3-1.4 1.5 1.4 3 1.4 1.5-1.4 3-1.4 1.5 1.4 3 1.4"/><path d="M3 17.5c1.5 0 1.5-1.4 3-1.4s1.5 1.4 3 1.4 1.5-1.4 3-1.4 1.5 1.4 3 1.4 1.5-1.4 3-1.4 1.5 1.4 3 1.4"/></symbol>
+  <symbol id="i-valve" viewBox="0 0 24 24"><path d="m4 6 7 6-7 6V6ZM20 6l-7 6 7 6V6Z"/><path d="M11 12h2"/></symbol>
+  <symbol id="i-fit" viewBox="0 0 24 24"><path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"/><rect x="8.5" y="8.5" width="7" height="7" rx="1.5"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5.5v13l10-6.5-10-6.5Z" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="i-pause" viewBox="0 0 24 24"><rect x="7" y="5" width="3.6" height="14" rx="1.2" fill="currentColor" stroke="none"/><rect x="13.4" y="5" width="3.6" height="14" rx="1.2" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="i-close" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4.5 7h15M9.5 3.8h5M6.5 7l.8 12.2c.1 1 1 1.8 2 1.8h5.4c1 0 1.9-.8 2-1.8L17.5 7"/><path d="M10 11v6M14 11v6"/></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3.5v11M7.5 10.5 12 15l4.5-4.5"/><path d="M4 17.5v2a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-2"/></symbol>
+  <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 20.5v-11M7.5 13.5 12 9l4.5 4.5"/><path d="M4 6.5v-2a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v2"/></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.4A8.5 8.5 0 0 1 9.6 4 8.5 8.5 0 1 0 20 14.4Z"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M18.7 5.3l-1.4 1.4M6.7 17.3l-1.4 1.4"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 11v5.5"/><circle cx="12" cy="8" r="1" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="i-warning" viewBox="0 0 24 24"><path d="M12 3.8 21 20H3L12 3.8Z"/><path d="M12 9.5v5"/><circle cx="12" cy="17" r=".9" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="m8 12.2 2.7 2.7 5.4-5.5"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.2"/><path d="m15.2 15.2 4.6 4.6"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></symbol>
+  <symbol id="i-install" viewBox="0 0 24 24"><rect x="6.5" y="2.8" width="11" height="18.4" rx="2.2"/><path d="M12 6.5v8M9 12l3 3 3-3"/><path d="M10.5 19h3"/></symbol>
+  <symbol id="i-layers" viewBox="0 0 24 24"><path d="m12 3.5 9 5-9 5-9-5 9-5Z"/><path d="m3.5 12.2 8.5 4.7 8.5-4.7"/><path d="m3.5 16.4 8.5 4.7 8.5-4.7"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5.3l3.4 2"/></symbol>
+  <symbol id="i-gauge" viewBox="0 0 24 24"><path d="M4.2 17.5a8.5 8.5 0 1 1 15.6 0"/><path d="m12 13 3.7-3.7"/><circle cx="12" cy="13" r="1.4" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="i-link" viewBox="0 0 24 24"><path d="M9.5 14.5 14.5 9.5"/><path d="M7.8 17.7 5.9 19.6a3.9 3.9 0 0 1-5.5-5.5l3.4-3.4a3.9 3.9 0 0 1 5.5 0"/><path d="M16.2 6.3l1.9-1.9a3.9 3.9 0 0 1 5.5 5.5l-3.4 3.4a3.9 3.9 0 0 1-5.5 0"/></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+  <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 11a8 8 0 1 0-2.1 6.3"/><path d="M20 5v6h-6"/></symbol>
+</svg>
+
+<div id="app">
+  <header class="appbar">
+    <div class="brand">
+      <div class="brand-mark"><svg class="icon"><use href="#i-droplet"/></svg></div>
+      <div class="brand-copy">
+        <div class="brand-name">WaterNet</div>
+        <div class="brand-sub" id="brandSub">Water distribution modeling</div>
+      </div>
+    </div>
+    <div class="appbar-actions">
+      <button class="icon-btn" id="btnUndo" aria-label="Undo" title="Undo" disabled><svg class="icon"><use href="#i-undo"/></svg></button>
+      <button class="icon-btn" id="btnRedo" aria-label="Redo" title="Redo" disabled><svg class="icon"><use href="#i-redo"/></svg></button>
+      <button class="icon-btn" id="btnMenu" aria-label="Project menu" title="Project menu"><svg class="icon"><use href="#i-more"/></svg></button>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="view active" id="view-map" aria-label="Network map">
+      <div class="map-shell" id="mapShell">
+        <canvas id="mapCanvas" aria-label="Network map. Use the Data tab for a list of nodes and links."></canvas>
+
+        <div class="map-top">
+          <button class="hud-chip" id="mapStatus" type="button">
+            <span class="status-dot"></span><span id="mapStatusText">Design view</span>
+          </button>
+          <button class="hud-chip icon-chip" id="layerBtn" type="button" aria-label="Map coloring">
+            <svg class="icon"><use href="#i-layers"/></svg><span id="layerLabel">Pressure</span>
+          </button>
+        </div>
+
+        <div class="map-empty" id="mapEmpty" hidden>
+          <div class="empty-icon"><svg class="icon"><use href="#i-droplet"/></svg></div>
+          <h2>Start your network</h2>
+          <p>Place a reservoir or tank, then add junctions and pipes. Tap a tool below and then the map.</p>
+          <div class="empty-actions">
+            <button class="btn btn-primary" id="emptyAddNode" type="button">Add junction</button>
+            <button class="btn btn-ghost" id="emptySamples" type="button">Load example</button>
+          </div>
+        </div>
+
+        <div class="map-bottom" id="mapBottom">
+          <div class="map-legend" id="mapLegend" hidden></div>
+          <div class="timebar" id="timebar" hidden>
+            <div class="timebar-top">
+              <span id="timebarLabel">00:00</span>
+              <span class="timebar-meta" id="timebarMeta"></span>
+              <button class="mini-btn" id="playBtn" type="button" aria-label="Play timeline"><svg class="icon"><use href="#i-play"/></svg></button>
+            </div>
+            <input class="range" type="range" id="timeSlider" min="0" max="0" step="1" value="0" aria-label="Simulation time">
+          </div>
+          <div class="tool-dock" id="toolDock" role="toolbar" aria-label="Map tools">
+            <button class="tool active" data-tool="select" type="button" aria-label="Select"><svg class="icon"><use href="#i-cursor"/></svg><span>Select</span></button>
+            <button class="tool" data-tool="junction" type="button" aria-label="Add junction"><svg class="icon"><use href="#i-junction"/></svg><span>Junction</span></button>
+            <button class="tool" data-tool="pipe" type="button" aria-label="Add pipe"><svg class="icon"><use href="#i-pipe"/></svg><span>Pipe</span></button>
+            <button class="tool" data-tool="pump" type="button" aria-label="Add pump"><svg class="icon"><use href="#i-pump"/></svg><span>Pump</span></button>
+            <button class="tool" data-tool="tank" type="button" aria-label="Add tank"><svg class="icon"><use href="#i-tank"/></svg><span>Tank</span></button>
+            <button class="tool" data-tool="reservoir" type="button" aria-label="Add reservoir"><svg class="icon"><use href="#i-reservoir"/></svg><span>Reservoir</span></button>
+            <button class="tool" data-tool="valve" type="button" aria-label="Add valve"><svg class="icon"><use href="#i-valve"/></svg><span>Valve</span></button>
+            <button class="tool tool-sep" data-action="fit" type="button" aria-label="Fit network"><svg class="icon"><use href="#i-fit"/></svg><span>Fit</span></button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="view page-view" id="view-results" aria-label="Simulation results">
+      <div class="page" id="resultsPage">
+        <div class="page-head">
+          <div>
+            <h1>Simulation</h1>
+            <p id="resultsSub">Steady state and extended-period hydraulics</p>
+          </div>
+          <span class="badge" id="simBadge">Not run</span>
+        </div>
+        <div id="resultsBody"></div>
+      </div>
+    </section>
+
+    <section class="view page-view" id="view-data" aria-label="Network data">
+      <div class="page">
+        <div class="page-head">
+          <div>
+            <h1>Network data</h1>
+            <p>Nodes, pipes, pumps and valves</p>
+          </div>
+          <button class="icon-btn solid" id="dataAdd" type="button" aria-label="Add junction" title="Add junction"><svg class="icon"><use href="#i-plus"/></svg></button>
+        </div>
+        <div class="stat-strip" id="dataStats"></div>
+        <div class="search-box">
+          <svg class="icon"><use href="#i-search"/></svg>
+          <input id="dataSearch" type="search" placeholder="Search ID or type" autocomplete="off" aria-label="Search network">
+        </div>
+        <div class="segmented" id="dataSeg">
+          <button class="active" data-kind="nodes" type="button">Nodes</button>
+          <button data-kind="links" type="button">Links</button>
+        </div>
+        <div class="data-list" id="dataList"></div>
+      </div>
+    </section>
+
+    <section class="view page-view" id="view-more" aria-label="Settings and project">
+      <div class="page" id="morePage"></div>
+    </section>
+  </main>
+
+  <nav class="tabbar" aria-label="Main navigation">
+    <button class="tab active" data-view="map" type="button"><svg class="icon"><use href="#i-map"/></svg><span>Map</span></button>
+    <button class="tab" data-view="results" type="button"><svg class="icon"><use href="#i-chart"/></svg><span>Simulate</span></button>
+    <button class="tab" data-view="data" type="button"><svg class="icon"><use href="#i-list"/></svg><span>Data</span></button>
+    <button class="tab" data-view="more" type="button"><svg class="icon"><use href="#i-settings"/></svg><span>More</span></button>
+  </nav>
+</div>
+
+<div class="sheet-layer" id="sheetLayer" aria-hidden="true">
+  <div class="sheet-scrim" id="sheetScrim"></div>
+  <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="Panel">
+    <div class="sheet-handle"></div>
+    <div id="sheetContent"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<input type="file" id="fileInput" accept=".inp,.json,application/json,text/plain" hidden>
+
+<script src="solver.js"></script>
+<script src="inp.js"></script>
+<script src="samples.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

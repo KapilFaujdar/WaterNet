@@ -1,0 +1,64 @@
+{
+  "name": "WaterNet — Water Distribution Modeling",
+  "short_name": "WaterNet",
+  "description": "Build water distribution networks, run EPANET-style hydraulic simulations, and inspect pressures, flows and tank levels on your phone.",
+  "id": "./",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "any",
+  "background_color": "#edf4f7",
+  "theme_color": "#075a72",
+  "lang": "en",
+  "dir": "ltr",
+  "categories": ["utilities", "productivity", "education"],
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "icons/maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Open network map",
+      "short_name": "Map",
+      "description": "Open the WaterNet network editor",
+      "url": "./?view=map",
+      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Run simulation",
+      "short_name": "Simulate",
+      "description": "Open simulation controls",
+      "url": "./?view=results",
+      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+# OS / editor files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Nested upstream EPANET reference clone
+/EPANET/
