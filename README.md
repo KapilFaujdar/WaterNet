@@ -187,8 +187,6 @@ WaterNet/
 └── icons/                  App icons
 ```
 
-The optional `EPANET/` directory is an upstream reference clone. It is ignored by `.gitignore` and is not required to run WaterNet.
-
 ## How the solver works
 
 `solver.js` solves the coupled node-continuity and link-energy equations with the Global Gradient Algorithm:
